@@ -1,0 +1,188 @@
+
+# Configure a default setup of Home Assistant (frontend, api, etc)
+default_config:
+mobile_app:
+ios:
+
+recorder:
+  include:
+    domains:
+      - sensor
+      - switch
+      - media_player
+      - binary_sensor
+  
+http:
+  base_url: https://XXXXX.duckdns.org
+  ssl_certificate: /ssl/fullchain.pem
+  ssl_key: /ssl/privkey.pem
+  ip_ban_enabled: True
+  login_attempts_threshold: 3
+
+homekit:
+  auto_start: true
+  filter:
+    include_entities:
+      - binary_sensor.front_door_sensor
+      - switch.entrance_lights
+      - switch.hall_lights
+      - sensor.hall_temperature
+      - cover.bedroom_blinds
+      - switch.bedroom_lights
+      - sensor.bedroom_temp
+      - sensor.bedroom_humidity
+      - cover.living_room_blinds
+      - media_player.samsung_ue40h6200
+      - light.color_lights
+      - light.ceeling_lights
+      - climate.daikin_sala
+      - sensor.daikin_sala_inside_temperature
+      - cover.office_blinds
+      - switch.heating
+      - switch.kitchen_lights
+      - media_player.cozinha_speaker
+      - switch.office_lights
+      - media_player.office_display
+      - switch.shellyplug_6d0d91_relay_0
+
+# Text to speech
+tts:
+  - platform: google_translate
+
+google_assistant:
+  project_id: homeassistant-52c95
+  service_account: !include SERVICE_ACCOUNT.JSON
+  report_state: true
+  exposed_domains:
+    - switch
+    - cover
+
+group: !include groups.yaml
+automation: !include automations.yaml
+script: !include scripts.yaml
+scene: !include scenes.yaml
+
+
+mqtt:
+  discovery: true
+  broker: 192.168.1.14
+  port: 1883
+#  discovery: true
+#  usermame:
+#  password: 
+
+light:
+  - platform: group
+    name: Ceeling Lights
+    entities:
+      - light.color_temperature_light_11
+      - light.color_temperature_light_12
+      - light.color_temperature_light_13
+      - light.color_temperature_light_21
+      - light.color_temperature_light_22
+      - light.color_temperature_light_23
+      - light.color_temperature_light_32
+      - light.color_temperature_light_33
+  - platform: group
+    name: Color Lights
+    entities:
+      - light.candeeiro
+      - light.tv
+      - light.sofa
+      - light.hue_light
+
+telegram_bot:
+    platform: polling
+    api_key: !api_key
+    allowed_chat_ids:
+    - XXXXX
+
+notify:
+  - platform: telegram
+    name: Home Assistant
+    chat_id: XXXXX
+
+weather:
+  - platform: ipma
+  
+sensor:
+  - platform: waze_travel_time
+    origin: zone.home #41.1751678 , -8.5546123
+    destination: zone.farfetch #41.1611587 , -8.6448834
+    region: 'EU'
+    
+  - platform:  waze_travel_time
+    origin: zone.farfetch #41.1611587 , -8.6448834
+    destination: zone.home #41.1751678 , -8.5546123 
+    region: 'EU'
+
+  - platform:  waze_travel_time
+    origin: zone.home #41.1611587 , -8.6448834
+    destination: zone.viana #41.1751678 , -8.5546123 
+    region: 'EU'
+
+  - platform:  waze_travel_time
+    origin: zone.viana #41.1611587 , -8.6448834
+    destination: zone.home #41.1751678 , -8.5546123 
+    region: 'EU'
+
+  - platform: mqtt
+    name: "Front Door Lux"
+    state_topic: "shellies/shellydw2-XXXXX/sensor/lux"
+    value_template: '{{ value|round(0) }}'
+    qos: 1
+    device_class: illuminance
+    unit_of_measurement: 'lux'
+
+  - platform: mqtt
+    name: "Front Door Battery"
+    state_topic: "shellies/shellydw2-XXXXX/sensor/battery"
+    value_template: '{{ value|round(0) }}'
+    qos: 1
+    device_class: battery
+    unit_of_measurement: '%'
+    
+  - platform: mqtt
+    name: "Hall Temperature"
+    state_topic: "shellies/shellydw2-XXXXX/sensor/temperature"
+    #value_template: '{{ value|round(0) }}'
+    qos: 1
+    unit_of_measurement: '°C'
+    device_class: temperature
+    #icon: mdi:angle-acute
+
+  - platform: mqtt
+    name: "Bedroom Temp"
+    state_topic: "shellies/shellyht-XXXXX/sensor/temperature"
+    unit_of_measurement: '°C'
+    device_class: temperature
+    qos: 1
+
+  - platform: mqtt
+    name: "Bedroom Humidity"
+    state_topic: "shellies/shellyht-XXXXX/sensor/humidity"
+    unit_of_measurement: '%'
+    device_class: humidity
+    qos: 1
+
+  - platform: mqtt
+    name: "Bedroom Battery"
+    state_topic: "shellies/shellyht-XXXXX/sensor/battery"
+    unit_of_measurement: '%'
+    device_class: battery
+    qos: 1
+
+  - platform: mqtt
+    name: "Bedroom Online"
+    state_topic: "shellies/shellyht-XXXXX/online"
+    qos: 1
+    
+binary_sensor:
+  - platform: mqtt
+    state_topic: "shellies/shellydw2-XXXX/sensor/state"
+    name: "Front Door Sensor"
+    payload_on: 'open'
+    payload_off: 'close'
+    qos: 1
+    device_class: door
+
