@@ -1,0 +1,14 @@
+- alias: Front Door Open
+  trigger:
+   - platform: state
+      entity_id: binary_sensor.front_door_sensor
+      from: 'off'
+      to: 'on'
+  action:
+    - service: notify.mobile_app_iphone_lourenco
+      data:
+        title: "Front Door Open"
+        message: "Someone opened your front door"
+    - service: switch.turn_on
+      data:
+        entity_id: light.hue_light_2#
